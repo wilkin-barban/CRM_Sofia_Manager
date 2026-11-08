@@ -63,4 +63,6 @@ jobs:
           --exclude tests/unit/web-client-operator-cart-flow.test.ts
 
       - name: Run service-backed Supabase tests
+        env:
+          SUPABASE_TEST_ALLOW_PULL: '1'
         run: npm run test:unit:supabase
