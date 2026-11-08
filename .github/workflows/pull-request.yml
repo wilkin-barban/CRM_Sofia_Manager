@@ -1,13 +1,16 @@
-name: Pull request validation
+name: Repository validation
 
 on:
+  push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: pr-validation-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -17,7 +20,7 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Check out pull request
+      - name: Check out repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -33,8 +36,13 @@ jobs:
 
       - name: Reject whitespace errors
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: git diff --check "$BASE_SHA"...HEAD
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -n "$BASE_SHA" ] && git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            git diff --check "$BASE_SHA"...HEAD
+          else
+            git diff --check HEAD^..HEAD
+          fi
 
       - name: Lint
         run: npm run lint
