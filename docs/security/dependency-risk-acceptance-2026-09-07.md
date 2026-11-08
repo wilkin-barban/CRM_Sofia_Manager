@@ -52,10 +52,11 @@ Remediation applied before release:
 - `npm audit fix` for the transitive `undici`, `vite`, `source-map-js` findings
 - lockfile regenerated once, with no other manifest change
 
-Verified result (`npm audit`, 2026-11-08):
+Verified results (2026-11-08):
 
 ```text
-{"info":0,"low":0,"moderate":11,"high":0,"critical":0,"total":11}
+npm audit             -> 0 critical, 0 high, 11 moderate (dev tooling only)
+npm audit --omit=dev  -> 0 vulnerabilities (0/0, production dependencies)
 ```
 
 All remaining findings are moderate and dev-tooling only:
@@ -69,6 +70,9 @@ The two findings accepted on 2026-09-07 (`mammoth` → `@xmldom/xmldom` and
 `googleapis-common` → `qs`) no longer appear in `npm audit`; the `xlsx`/`googleapis`
 dependencies were retired from the tree.
 
-The original acceptance condition — zero critical and zero high findings — is met
-again. Lint, type-check, hermetic tests and the production build are re-run against
-the updated tree before release.
+Production dependencies are clean: `npm audit --omit=dev` reports 0 critical, 0 high
+and 0 moderate findings. The original acceptance condition — zero critical and zero
+high findings — is met again in the full tree, and the production tree has no
+findings at all. The 11 remaining moderate findings stay confined to lint and test
+tooling that is never shipped. Lint, type-check, hermetic tests and the production
+build are re-run against the updated tree before release.
