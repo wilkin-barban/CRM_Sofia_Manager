@@ -275,6 +275,17 @@ for image in "${required_images[@]}"; do
     fi
   done
   if [[ "$image_cached" != true ]]; then
+    # Runners start with an empty image cache; a disposable CI job may pull the
+    # pinned tags instead. Local runs keep failing closed unless they opt in.
+    if [[ "${SUPABASE_TEST_ALLOW_PULL:-0}" == '1' ]]; then
+      if ! docker pull "$image" >/dev/null 2>&1; then
+        printf 'pull-failed: %s\n' "$image" >&2
+        exit 1
+      fi
+      image_cached=true
+    fi
+  fi
+  if [[ "$image_cached" != true ]]; then
     printf 'missing-image: %s\n' "$image" >&2
     exit 1
   fi
