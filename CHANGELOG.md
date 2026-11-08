@@ -40,14 +40,17 @@ Primeira release pública, publicada em
 
 ### Segurança
 
-- Dependências de runtime e build atualizadas na pré-release: `next` 16.4.5 (corrige
-  advisory crítico de RCE), `eslint-config-next` 16.4.5, `sharp` 0.35.5 e `zod`
-  4.6.6, além de `npm audit fix` para achados transitivos (`undici`, `vite`,
-  `source-map-js`). `npm audit` passa a reportar **0 achados críticos e 0 altos**.
-- Permanecem 11 achados moderados restritos a ferramentas de desenvolvimento
-  (`typescript-eslint`, `vitest`), documentados no registro de risco de dependências.
-- A auditoria de dependências está em aberto apenas para esses achados moderados; o
-  registro vigente está em `docs/security/dependency-risk-acceptance-2026-09-07.md`.
+- Dependências de runtime e build atualizadas nesta release: `next` 16.4.5
+  (corrige advisory crítico de RCE), `eslint-config-next` 16.4.5, `sharp` 0.35.5 e
+  `zod` 4.6.6, além de `npm audit fix` para achados transitivos (`undici`, `vite`,
+  `source-map-js`).
+- **Zero achados críticos e zero altos** no `npm audit` completo.
+- `npm audit --omit=dev` (dependências de produção) reporta **0 vulnerabilidades**,
+  ou seja, **0/0**.
+- A árvore completa de desenvolvimento mantém 11 achados moderados em
+  `eslint-config-next` → `typescript-eslint`/`minimatch` e em `vitest`, sem superfície
+  em runtime; estão documentados no registro de risco de dependências
+  (`docs/security/dependency-risk-acceptance-2026-09-07.md`).
 - Esta release é source-first: não publica imagem Docker genérica, porque as
   variáveis `NEXT_PUBLIC_*` são embutidas em tempo de build.
 
