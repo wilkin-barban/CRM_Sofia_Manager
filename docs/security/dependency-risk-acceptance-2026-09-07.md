@@ -34,3 +34,41 @@ Required before merge:
 - ESLint, TypeScript, Next.js production build, hermetic Vitest, and service-backed Supabase suites.
 
 Rollback is a revert of the manifest, lockfile, and this disposition document. No database or production state is changed by this work unit.
+
+## Update — 2026-11-08 (release v0.1.0 preflight)
+
+The v0.1.0 release preflight repeated `npm audit` on a clean `npm ci` and found the
+disposition above had expired and no longer described the tree: the lockfile reported
+**1 critical, 6 high and 11 moderate** findings. The critical finding was the Next.js
+RCE advisory (fixed in 16.4.5); high findings also covered `sharp`, `zod`, `undici`
+and `vite`.
+
+Remediation applied before release:
+
+- `next` 16.3.3 → **16.4.5**
+- `eslint-config-next` 16.3.0 → **16.4.5**
+- `sharp` 0.35.4 → **0.35.5**
+- `zod` ^4.4.3 → **^4.6.6**
+- `npm audit fix` for the transitive `undici`, `vite`, `source-map-js` findings
+- lockfile regenerated once, with no other manifest change
+
+Verified result (`npm audit`, 2026-11-08):
+
+```text
+{"info":0,"low":0,"moderate":11,"high":0,"critical":0,"total":11}
+```
+
+All remaining findings are moderate and dev-tooling only:
+
+| Path | Surface | Status |
+|---|---|---|
+| `eslint-config-next` → `typescript-eslint` → `@typescript-eslint/*` → `minimatch` | Lint tooling, not shipped | Accepted; npm's suggested fix is a semver-major downgrade to `eslint-config-next@15.5.29`, rejected |
+| `vitest` → `@vitest/mocker`, `@vitest/coverage-v8` | Test tooling, not shipped | Accepted; no runtime exposure |
+
+The two findings accepted on 2026-09-07 (`mammoth` → `@xmldom/xmldom` and
+`googleapis-common` → `qs`) no longer appear in `npm audit`; the `xlsx`/`googleapis`
+dependencies were retired from the tree.
+
+The original acceptance condition — zero critical and zero high findings — is met
+again. Lint, type-check, hermetic tests and the production build are re-run against
+the updated tree before release.
