@@ -1,18 +1,21 @@
 <div align="center">
 
+<img src="docs/assets/social-preview-1280x640.png" alt="CRM Sofia Manager — atendimento omnichannel, pedidos e RAG" width="100%" />
+
 # 🍖 CRM Sofia Manager 🔥
 ### *Plataforma Omnichannel de Atendimento Inteligente, Gestão de Pedidos e RAG para Assados de Domingo*
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js)](https://nextjs.org/)
+[![Release](https://img.shields.io/github/v/release/wilkin-barban/CRM_Sofia_Manager?label=release&color=brightgreen)](https://github.com/wilkin-barban/CRM_Sofia_Manager/releases/tag/v0.1.0)
+[![Next.js](https://img.shields.io/badge/Next.js-16.4-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20%7C%20RLS-emerald?logo=supabase)](https://supabase.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
-[![Tests](https://img.shields.io/badge/Tests-626%2F626%20Passed-brightgreen)](https://vitest.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
+[![Tests](https://img.shields.io/badge/Tests-2.827%20casos-brightgreen)](https://vitest.dev/)
 
 ---
 
-[🇧🇷 Português](#-visão-geral-do-projeto-pt-br) • [🇪🇸 Español](#-visión-general-del-proyecto-es) • [Arquitetura](#-arquitetura-do-sistema) • [Instalação](#-instalação-e-configuração) • [Módulos](#-módulos-da-plataforma) • [Licença](#-licença)
+[🇧🇷 Português](#-visão-geral-do-projeto-pt-br) • [🇪🇸 Español](#-visión-general-del-proyecto-es) • [Arquitetura](#-arquitetura-do-sistema) • [Instalação](#-instalação-e-configuração) • [Módulos](#-módulos-da-plataforma) • [Releases](https://github.com/wilkin-barban/CRM_Sofia_Manager/releases) • [Licença](#-licença)
 
 ---
 
@@ -49,7 +52,7 @@ O **CRM Sofia Manager** é uma solução completa desenvolvida para transformar 
 ```mermaid
 flowchart TD
     subgraph Canais["Canais de Entrada (Clientes)"]
-        WA["�� WhatsApp (Evolution API / Meta)"]
+        WA["💬 WhatsApp (Evolution API)"]
         TG["✈️ Telegram Bot"]
         WEB["🌐 Web App (PWA & Client Chat)"]
     end
@@ -61,7 +64,7 @@ flowchart TD
     end
 
     subgraph Data["Persistência & Realtime (Supabase)"]
-        DB[("🐘 PostgreSQL 15 + RLS")]
+        DB[("🐘 PostgreSQL 17 + RLS")]
         RT["⚡ Supabase Realtime (WebSockets)"]
         STG["📦 Storage (Imagens de Produtos)"]
     end
@@ -120,10 +123,10 @@ flowchart TD
 
 | Componente | Tecnologia | Propósito |
 | :--- | :--- | :--- |
-| **Framework Web** | Next.js 16.3 (Turbopack, App Router, Server Actions) | Frontend & Backend SSR/SSG |
+| **Framework Web** | Next.js 16.4 (App Router, Server Actions) | Frontend & Backend SSR/SSG |
 | **Linguagem** | TypeScript 5.0 | Tipagem estrita de ponta a ponta |
-| **Estilização** | Tailwind CSS 3.4 & Lucide Icons | Design system escuro, denso e responsivo |
-| **Banco de Dados** | Supabase PostgreSQL 15 com RLS & RPCs | Persistência transacional e isolamento multilocatário |
+| **Estilização** | Tailwind CSS 4 & Lucide Icons | Design system escuro, denso e responsivo |
+| **Banco de Dados** | Supabase PostgreSQL 17 com RLS & RPCs | Persistência transacional e isolamento multilocatário |
 | **Realtime** | Supabase Realtime | Atualização em tempo real de mensagens e pedidos |
 | **Inteligência Artificial** | DeepSeek | Pipeline RAG com injeção dinâmica de estoque e cardápio |
 | **WhatsApp Gateway** | Evolution API v2 | Comunicação com clientes via WhatsApp |
@@ -143,7 +146,7 @@ flowchart TD
 
 1. **Clonar o Repositório**:
    ```bash
-   git clone https://github.com/wilkinbarban/CRM_Sofia_Manager.git
+   git clone https://github.com/wilkin-barban/CRM_Sofia_Manager.git
    cd CRM_Sofia_Manager
    ```
 
@@ -173,14 +176,17 @@ flowchart TD
 
 ## 🧪 Suíte de Testes (TDD & E2E)
 
-O projeto possui cobertura rigorosa com **109 arquivos de teste** e mais de **620 asserções automatizadas**:
+O projeto possui **308 arquivos de teste**: 306 na suíte hermética e mais as duas
+suítes service-backed que rodam no CI com Docker. A validação local desta release
+executou **2.827 casos** — 2.822 verdes, 2 ignorados e 3 timeouts de 5 s em testes
+pesados sob a carga do host (todos verdes quando rodados isolados).
 
 ```bash
 # Executar todos os testes unitários e de integração
 npm test
 
 # Executar testes em modo watch
-npm run test:watch
+npm run test:unit:watch
 
 # Executar testes ponta a ponta (E2E) com Playwright
 npx playwright test

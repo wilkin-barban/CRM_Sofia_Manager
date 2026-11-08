@@ -2,6 +2,15 @@
   "name": "@asados/web",
   "version": "0.1.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilkin-barban/CRM_Sofia_Manager.git",
+    "directory": "apps/web"
+  },
+  "homepage": "https://crmsofiamanager.duckdns.org",
+  "bugs": {
+    "url": "https://github.com/wilkin-barban/CRM_Sofia_Manager/issues"
+  },
   "engines": {
     "node": ">=22.12.0 <23"
   },
