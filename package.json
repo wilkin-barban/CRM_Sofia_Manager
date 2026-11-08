@@ -2,6 +2,14 @@
   "name": "asados-monorepo",
   "version": "0.1.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilkin-barban/CRM_Sofia_Manager.git"
+  },
+  "homepage": "https://crmsofiamanager.duckdns.org",
+  "bugs": {
+    "url": "https://github.com/wilkin-barban/CRM_Sofia_Manager/issues"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
