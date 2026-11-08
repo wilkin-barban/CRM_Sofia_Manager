@@ -1,6 +1,16 @@
+import fs from 'node:fs'
 import path from 'node:path'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
+
+// Packages are hoisted to the repository root by npm workspaces, but a nested
+// install layout must keep working for contributors who use it.
+const webModules = path.resolve(import.meta.dirname, 'apps/web/node_modules')
+const rootModules = path.resolve(import.meta.dirname, 'node_modules')
+const workspacePackage = (name: string) => {
+  const nested = path.join(webModules, name)
+  return fs.existsSync(nested) ? nested : path.join(rootModules, name)
+}
 
 export default defineConfig({
   plugins: [react()],
@@ -9,11 +19,11 @@ export default defineConfig({
     dedupe: ['next', 'react', 'react-dom', '@supabase/ssr', 'sharp'],
     alias: {
       '@': path.resolve(import.meta.dirname, 'apps/web/src'),
-      react: path.resolve(import.meta.dirname, 'apps/web/node_modules/react'),
-      'react-dom': path.resolve(import.meta.dirname, 'apps/web/node_modules/react-dom'),
-      next: path.resolve(import.meta.dirname, 'apps/web/node_modules/next'),
-      '@supabase/ssr': path.resolve(import.meta.dirname, 'apps/web/node_modules/@supabase/ssr'),
-      sharp: path.resolve(import.meta.dirname, 'apps/web/node_modules/sharp'),
+      react: workspacePackage('react'),
+      'react-dom': workspacePackage('react-dom'),
+      next: workspacePackage('next'),
+      '@supabase/ssr': workspacePackage('@supabase/ssr'),
+      sharp: workspacePackage('sharp'),
     },
   },
   test: {
