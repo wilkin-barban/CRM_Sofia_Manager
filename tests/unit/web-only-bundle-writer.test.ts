@@ -1004,7 +1004,7 @@ finally: os.unlink = orig_unlink; os.close(bfd)`)
   it.each([
     [
       'source devino mismatch',
-      (bdir: string) => `
+      () => `
 dev, ino, _ = bw.write_private_entry(bfd, ".manifest.tmp", b'data')
 try:
     bw.strict_link_manifest(bfd, ".manifest.tmp", "manifest.json", (dev, ino + 1))

@@ -4,7 +4,7 @@
  * NOT atomic dirfd, NOT race-proof. Raw outputs only for trusted test scope.
  */
 import {
-  mkdtempSync, rmSync, chmodSync, existsSync, mkdirSync, statSync, lstatSync, realpathSync,
+  mkdtempSync, rmSync, chmodSync, mkdirSync, statSync, lstatSync, realpathSync,
 } from 'node:fs'
 import { join, isAbsolute, normalize } from 'node:path'
 import { tmpdir } from 'node:os'

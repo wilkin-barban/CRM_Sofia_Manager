@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   SOFIA_WEB_IDEMPOTENCY_PREFIX,
   formatSofiaWebExternalId,
-  admitSofiaWebInboundMessage,
 } from '@/lib/sofia/inbound-batch-producer'
 import { obterSofiaPresence } from '@/app/actions/chat'
 

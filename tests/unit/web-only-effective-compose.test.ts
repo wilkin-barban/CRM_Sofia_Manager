@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import {
-  createSandbox, FIXTURE_ID, FIXTURE_CANDIDATE_IMAGE_ID,
+  createSandbox, FIXTURE_CANDIDATE_IMAGE_ID,
   FIXTURE_NETWORK_ID, Sandbox, makeInspectFixture, FIXTURE_IMAGE,
   PYTHON_BIN, HELPER_PATH,
 } from '../helpers/web-target-sandbox'

@@ -1,7 +1,7 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { resolveBusinessProfileSync, DEFAULT_BUSINESS_PROFILE } from '@/lib/config/business-profile'
+import { resolveBusinessProfileSync } from '@/lib/config/business-profile'
 
 interface BrandLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -30,7 +30,6 @@ export function BrandLogo({
   const currentSize = sizeMap[size]
   const profile = resolveBusinessProfileSync()
   const displayBrandName = brandName || profile.name
-  const isDefault = displayBrandName === DEFAULT_BUSINESS_PROFILE.name
   const displaySubtitle = subtitle || profile.location
 
   const content = (
