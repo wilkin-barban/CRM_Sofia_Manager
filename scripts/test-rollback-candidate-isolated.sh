@@ -8,7 +8,7 @@ umask 077
 # Pinned to the designated rollback commit; runs completely isolated from production.
 # ==============================================================================
 
-readonly PINNED_SOURCE_COMMIT="6eecb20502dbbfc8b5dc7c776d439443b306edb3"
+readonly PINNED_SOURCE_COMMIT="6113ab649e4b511b62b566dce95edae8014c9e60"
 readonly PRODUCTION_PROJECT_REF="xvzdxoktwnzmxsfizkxo"
 readonly PRODUCTION_ORIGIN="crmsofiamanager.duckdns.org"
 readonly PRODUCTION_IMAGE_ID="sha256:aa040fc915d1b6b75ecf9fcf26ec61f1c57cb56cdda75442bee34918dc856d74"

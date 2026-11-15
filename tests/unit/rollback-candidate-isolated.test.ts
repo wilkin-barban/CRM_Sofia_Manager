@@ -12,7 +12,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 const root = process.cwd()
 const harnessPath = join(root, 'scripts/test-rollback-candidate-isolated.sh')
 
-const PINNED_SOURCE_COMMIT = '6eecb20502dbbfc8b5dc7c776d439443b306edb3'
+const PINNED_SOURCE_COMMIT = '6113ab649e4b511b62b566dce95edae8014c9e60'
 const PRODUCTION_PROJECT_REF = 'xvzdxoktwnzmxsfizkxo'
 const PRODUCTION_ORIGIN = 'crmsofiamanager.duckdns.org'
 const PRODUCTION_IMAGE_ID = 'sha256:aa040fc915d1b6b75ecf9fcf26ec61f1c57cb56cdda75442bee34918dc856d74'
