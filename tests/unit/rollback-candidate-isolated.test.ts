@@ -194,7 +194,7 @@ describe('isolated rollback-candidate compatibility harness', () => {
   it.each([
     'supabase_network_rollback-harness-unittest',
     'rollback-candidate-isolated-unittest-web',
-    'asados-web-harness:6eecb20-unittest',
+    'asados-web-harness:6113ab6-unittest',
   ])('refuses a collision with an already existing harness-owned resource %s', (owned) => {
     const sandbox = makeSandbox()
     const result = runHarness(sandbox, ['plan'], { FAKE_DOCKER_EXISTS: owned })
