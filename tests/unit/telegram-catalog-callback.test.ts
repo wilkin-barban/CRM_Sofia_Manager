@@ -24,18 +24,15 @@ vi.mock('@/lib/whatsapp/contact-status', () => ({
 import { POST } from '@/app/api/webhooks/telegram/route'
 
 const CHAT_ID = 1001
-const OFFICIAL_IDS = [
-  'a1111111-1111-4111-8111-111111111111',
-  'a2222222-2222-4222-8222-222222222222',
-]
+const OFFICIAL_IDS = ['doce-1', 'geladinho-2']
 
 type ProductOverrides = { url_imagem?: string | null }
 
 function product(id: string, overrides: ProductOverrides = {}) {
   return {
     id,
-    nome: `Combo ${id.slice(1, 2)}`,
-    descricao: 'Assado completo da casa',
+    nome: `Produto ${id}`,
+    descricao: 'Doce artesanal',
     preco_centavos: 11990,
     quantidade_estoque: 5,
     url_imagem: null,
@@ -139,9 +136,9 @@ beforeEach(() => {
 })
 
 describe('Telegram catalog callback opt-in', () => {
-  it('acks and sends the official cards only for an explicit linked view click', async () => {
+  it('acks and sends all active cards in query order only for an explicit linked view click', async () => {
     const { client, reads } = db({
-      products: [product('non-official-product'), ...OFFICIAL_IDS.map((id) => product(id))],
+      products: OFFICIAL_IDS.map((id) => product(id)),
     })
     m.admin.mockReturnValue(client)
     const fetchMock = telegramFetch()
@@ -171,7 +168,8 @@ describe('Telegram catalog callback opt-in', () => {
     expect(sent[2].body.reply_markup.inline_keyboard[0][0].callback_data).toBe(
       `catalog:add:${OFFICIAL_IDS[1]}`
     )
-    expect(JSON.stringify(sent.slice(1))).not.toContain('non-official-product')
+    expect(sent[1].body.text).toContain('Produto doce-1')
+    expect(sent[2].body.text).toContain('Produto geladinho-2')
   })
 
   it('keeps the phone link requirement and sends no card for an unlinked view click', async () => {
@@ -241,19 +239,20 @@ describe('Telegram catalog callback opt-in', () => {
     expect(JSON.stringify(sent)).not.toContain('Enviando o catálogo')
   })
 
-  it('reports empty and sends no card when only non-official products are available', async () => {
-    const { client } = db({ products: [product('non-official-product')] })
+  it('sends a single arbitrary product instead of reporting empty', async () => {
+    const { client } = db({ products: [product('produto-arbitrario')] })
     m.admin.mockReturnValue(client)
     const fetchMock = telegramFetch()
     vi.stubGlobal('fetch', fetchMock)
 
     const response = await POST(callbackRequest('catalog:view'))
 
-    expect(await response.json()).toMatchObject({ ok: true, status: 'catalog_view_empty' })
+    expect(await response.json()).toMatchObject({ ok: true, status: 'catalog_view_sent' })
     const sent = outbound(fetchMock)
     expect(sent.map((entry) => entry.method)).toEqual(['answerCallbackQuery', 'sendMessage'])
     expect(sent.some((entry) => entry.method === 'sendPhoto')).toBe(false)
-    expect(JSON.stringify(sent)).not.toContain('non-official-product')
+    expect(sent[1].body.text).toContain('Produto produto-arbitrario')
+    expect(sent[1].body.reply_markup.inline_keyboard[0][0].callback_data).toBe('catalog:add:produto-arbitrario')
     expect(JSON.stringify(sent)).not.toContain('Enviando o catálogo')
   })
 

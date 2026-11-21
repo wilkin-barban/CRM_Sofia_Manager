@@ -68,7 +68,7 @@ describe('Telegram catalog interactions', () => {
     expect(normalizeTelegramPhotoUrl('not a url', 'https://asados.test')).toBeNull()
   })
 
-  it('selects only the four canonical combos in their official order', () => {
+  it('selects all provided products in their original order, including arbitrary IDs', () => {
     const products = [
       { id: 'side', nome: 'Farofa', descricao: null, preco_centavos: 1000, url_imagem: null },
       { id: 'a4444444-4444-4444-8444-444444444444', nome: 'Combo 4', descricao: null, preco_centavos: 4000, url_imagem: null },
@@ -78,10 +78,12 @@ describe('Telegram catalog interactions', () => {
     ]
 
     expect(selectOfficialTelegramCombos(products).map((product) => product.id)).toEqual([
-      'a1111111-1111-4111-8111-111111111111',
-      'a2222222-2222-4222-8222-222222222222',
-      'a3333333-3333-4333-8333-333333333333',
+      'side',
       'a4444444-4444-4444-8444-444444444444',
+      'a2222222-2222-4222-8222-222222222222',
+      'a1111111-1111-4111-8111-111111111111',
+      'a3333333-3333-4333-8333-333333333333',
     ])
+    expect(selectOfficialTelegramCombos([])).toEqual([])
   })
 })

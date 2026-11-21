@@ -1,12 +1,5 @@
 import { formatarPrecoBrl, type ProdutoCardapio } from '@/lib/cardapio/formatar'
 
-const OFFICIAL_COMBO_IDS = [
-  'a1111111-1111-4111-8111-111111111111',
-  'a2222222-2222-4222-8222-222222222222',
-  'a3333333-3333-4333-8333-333333333333',
-  'a4444444-4444-4444-8444-444444444444',
-] as const
-
 export type TelegramCatalogCallback =
   | { action: 'view' }
   | { action: 'add'; productId: string }
@@ -17,7 +10,7 @@ export const TELEGRAM_CATALOG_VIEW_CALLBACK = 'catalog:view'
 
 /**
  * Prompt curto e estático devolvido quando o cliente pede o cardápio por palavra-chave.
- * Os cartões oficiais só saem depois do clique explícito neste botão.
+ * Os cartões só saem depois do clique explícito neste botão.
  */
 const TELEGRAM_CATALOG_PROMPT_TEXT =
   'Quer dar uma olhada no nosso catálogo? Toque no botão abaixo para ver os itens disponíveis.'
@@ -68,11 +61,7 @@ export function normalizeTelegramPhotoUrl(value: string | null | undefined, base
 }
 
 export function selectOfficialTelegramCombos<T extends ProdutoCardapio>(products: T[]): T[] {
-  const byId = new Map(products.map((product) => [product.id, product]))
-  return OFFICIAL_COMBO_IDS.flatMap((id) => {
-    const product = byId.get(id)
-    return product ? [product] : []
-  })
+  return products
 }
 
 export function buildTelegramCatalogCard(

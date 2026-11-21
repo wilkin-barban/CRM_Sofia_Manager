@@ -233,7 +233,7 @@ export async function POST(request: Request) {
           return Response.json({ ok: true, status: 'catalog_view_unavailable' })
         }
 
-        // A lista oficial é resolvida antes de qualquer afirmação de envio: o clique nunca
+        // A lista é resolvida antes de qualquer afirmação de envio: o clique nunca
         // termina em "enviado" com zero cartões.
         const officialCombos = selectOfficialTelegramCombos(products ?? [])
         if (!officialCombos.length) {
@@ -261,7 +261,7 @@ export async function POST(request: Request) {
                 .eq('ativo', true)
                 .maybeSingle()
               return product
-                ? { success: true, mensagem: `${product.nome}\n\n${product.descricao || 'Assado especial da casa.'}\n\nR$ ${(product.preco_centavos / 100).toFixed(2).replace('.', ',')}` }
+                ? { success: true, mensagem: `${product.nome}\n\n${product.descricao || 'Consulte os detalhes deste item.'}\n\nR$ ${(product.preco_centavos / 100).toFixed(2).replace('.', ',')}` }
                 : { success: false, mensagem: 'Esse produto não está disponível no momento.' }
             })()
           : await executarToolSofia('adicionar_ao_carrinho', {
