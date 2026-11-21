@@ -40,6 +40,7 @@ yarn-error.log*
 !.env.local.example
 
 # local and host runtime state
+/backup_asados_pre_clean.sql
 /data/
 /runtime/
 /uploads/
