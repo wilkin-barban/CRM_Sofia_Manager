@@ -13,7 +13,6 @@ import { allowsIntegrationMock } from '@/lib/runtime/environment'
 import { isWhatsAppInboundEligibleForSofia } from '@/lib/whatsapp/sofia-control'
 import { normalizeCuritibaPhone, isCuritibaPhone } from '@/lib/auth/phone'
 import { formatarCardapioResumido } from '@/lib/cardapio/formatar'
-import { gerarCatalogoCardsCompleto, obterCartaoCombo } from '@/lib/cardapio/cards'
 import {
   chamarDeepSeekChat,
   isUsableDeepSeekApiKey,
@@ -25,8 +24,6 @@ import { agruparFatosParaPrompt } from '@/lib/sofia/customer-memory'
 import { buildDefaultSofiaSystemPrompt } from '@/lib/sofia/default-prompt'
 import {
   getBusinessProfile,
-  resolveBusinessProfileSync,
-  type BusinessProfile,
 } from '@/lib/config/business-profile'
 
 const LEGACY_LLM_TIMEOUT_MS = 15_000
@@ -54,85 +51,9 @@ export function isSofiaAiGenerationEnabled(): boolean {
   return process.env.SOFIA_AI_GENERATION_ENABLED !== 'false'
 }
 
-/**
- * Modo Mock de contingência que analisa palavras-chave e devolve respostas estruturadas em Cartões Digitais
- */
-function obterRespostaMock(
-  mensagemCliente: string,
-  profile: BusinessProfile = resolveBusinessProfileSync(),
-): string {
-  const texto = mensagemCliente.toLowerCase().trim()
-
-  if (
-    texto.includes('cardápio') ||
-    texto.includes('cardapio') ||
-    texto.includes('menu') ||
-    texto.includes('opções') ||
-    texto.includes('opcoes') ||
-    texto.includes('promoç') ||
-    texto.includes('promoc') ||
-    texto.includes('combos') ||
-    texto.includes('o que tem') ||
-    texto.includes('o que vocês tem') ||
-    texto.includes('o que voces tem') ||
-    texto.includes('pratos')
-  ) {
-    return gerarCatalogoCardsCompleto('https://crmsofiamanager.duckdns.org')
-  }
-
-  if (texto.includes('combo 1') || texto.includes('clássico') || texto.includes('classico')) {
-    const c1 = obterCartaoCombo(1)
-    return c1 ? c1.textoMarkdownCartao : gerarCatalogoCardsCompleto('https://crmsofiamanager.duckdns.org')
-  }
-
-  if (texto.includes('combo 2') || (texto.includes('costela') && !texto.includes('suína') && !texto.includes('suina'))) {
-    const c2 = obterCartaoCombo(2)
-    return c2 ? c2.textoMarkdownCartao : gerarCatalogoCardsCompleto('https://crmsofiamanager.duckdns.org')
-  }
-
-  if (texto.includes('combo 3') || texto.includes('dueto') || texto.includes('costelinha')) {
-    const c3 = obterCartaoCombo(3)
-    return c3 ? c3.textoMarkdownCartao : gerarCatalogoCardsCompleto('https://crmsofiamanager.duckdns.org')
-  }
-
-  if (texto.includes('combo 4') || texto.includes('família') || texto.includes('familia') || texto.includes('kit churrasco')) {
-    const c4 = obterCartaoCombo(4)
-    return c4 ? c4.textoMarkdownCartao : gerarCatalogoCardsCompleto('https://crmsofiamanager.duckdns.org')
-  }
-
-  if (texto.includes('preço') || texto.includes('preco') || texto.includes('valor') || texto.includes('quanto custa') || texto.includes('quanto tá') || texto.includes('quanto ta')) {
-    return `Nossos combos têm o melhor custo-benefício de ${profile.location}, piá! 💰\n\n• *Combo 1 (Clássico - Frango Recheado)*: \`R$ 69,90\` (3-4 pessoas)\n• *Combo 2 (Costela Suprema no Bafo)*: \`R$ 119,90\` (4 pessoas)\n• *Combo 3 (Dueto Especial - Frango & Costelinha Suína)*: \`R$ 94,90\` (3-4 pessoas)\n• *Combo 4 (Kit Família)*: \`R$ 169,90\` (5-6 pessoas)\n\n💬 *Quantas pessoas vão almoçar com você hoje? Me diz que te indico o combo perfeito!* 😊`
-  }
-
-  if (texto.includes('horário') || texto.includes('horario') || texto.includes('funcionamento') || texto.includes('que horas') || texto.includes('abre') || texto.includes('fecha')) {
-    return 'Nosso atendimento funciona durante a semana, e as retiradas acontecem em janelas de 15 minutos sem fila! ⏰ Daí, quer agendar o seu pedido? 😊'
-  }
-
-  if (texto.includes('endereço') || texto.includes('endereco') || texto.includes('localização') || texto.includes('localizacao') || texto.includes('onde fica') || texto.includes('onde ficam') || texto.includes('rua') || texto.includes('bairro')) {
-    return `Ficamos em ${profile.pickupAddress}, ${profile.location}, piá! Fácil acesso com estacionamento rápido para você retirar seu pedido com agilidade! 📍 Daí, vai retirar no balcão ou prefere delivery? 🛵`
-  }
-
-  if (
-    texto.includes('cancelar') ||
-    texto.includes('cancelamento') ||
-    texto.includes('cancela') ||
-    texto.includes('alterar pedido') ||
-    texto.includes('modificar pedido') ||
-    texto.includes('mudar pedido') ||
-    texto.includes('mudar horário') ||
-    texto.includes('mudar horario') ||
-    texto.includes('trocar item') ||
-    texto.includes('trocar pedido')
-  ) {
-    return 'Compreendo perfeitamente, piá! Como seu pedido já foi registrado na nossa cozinha, vou repassar imediatamente sua solicitação de alteração/cancelamento para nossa equipe de atendimento humano assumir no balcão e cuidar de tudo para você com todo o carinho. Um de nossos atendentes entrará em contato em instantes! 🙏✨'
-  }
-
-  if (texto.includes('reserva') || texto.includes('reservar') || texto.includes('encomenda') || texto.includes('agendar') || texto.includes('pedido')) {
-    return 'Quer garantir seu combo quentinho pro domingo, piá? Excelente escolha! Daí, me diz qual combo você escolheu e qual janela de horário você prefere para a retirada (ex: 11h45, 12h00, 12h30)! 📅🍗'
-  }
-
-  // Resposta padrão
-  return `Olá! Sou a Sofía, ${profile.personaRole} da ${profile.name} (${profile.location}), piá! 😊 Como posso te ajudar com o seu pedido hoje?`
+/** Resposta de contingência sem informações de catálogo não verificadas. */
+function obterRespostaMock(): string {
+  return 'Olá! No momento não consigo consultar as informações. Por favor, procure nosso atendimento humano para ajudar você. 😊'
 }
 
 /**
@@ -227,7 +148,7 @@ export async function processarRagPipeline(
     console.error('[RAG Pipeline] Falha ao processar histórico de mensagens:', err)
   }
 
-  // 4. Buscar horários de atendimento da churrascaria em tempo real
+  // 4. Buscar horários de atendimento em tempo real
   let contextoHorarios = ''
   try {
     const { data: horarios } = await supabase
@@ -238,7 +159,7 @@ export async function processarRagPipeline(
 
     if (horarios && horarios.length > 0) {
       const nomesDias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
-      contextoHorarios = 'HORÁRIOS DE ATENDIMENTO DA CHURRASCARIA:\n' + horarios
+      contextoHorarios = 'HORÁRIOS DE ATENDIMENTO:\n' + horarios
         .map((h: any) => `- ${nomesDias[h.dia_semana]}: das ${h.hora_abertura.slice(0, 5)} às ${h.hora_fechamento.slice(0, 5)}`)
         .join('\n')
     }
@@ -420,7 +341,7 @@ ${regraIdiomaRodape}`
       return { sucesso: false, error: 'IA_INDISPONIVEL' }
     }
 
-    respostaIa = obterRespostaMock(mensagemCliente, businessProfile)
+    respostaIa = obterRespostaMock()
   }
 
   if (generationOnly) return { sucesso: true, canal: canalOrigem, respostaIa }
