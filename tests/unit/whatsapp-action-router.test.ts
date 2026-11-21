@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { processarAcaoInterativaWhatsApp } from '@/lib/whatsapp/action-router'
 import * as carrinhoService from '@/lib/carrinho/service'
+import { enviarCatalogoCombosWhatsApp } from '@/lib/whatsapp/gateways/catalog-gateway'
 
 vi.mock('@/lib/whatsapp/gateways/catalog-gateway', () => ({
   enviarCatalogoCombosWhatsApp: vi.fn().mockResolvedValue({ success: true, sent: 4 }),
@@ -98,6 +99,27 @@ describe('WhatsApp Action Router (TDD)', () => {
     expect(resultado.handled).toBe(true)
     expect(resultado.respostaTexto).toContain('Seu Carrinho de Pedido')
     expect(resultado.respostaTexto).toContain('Combo 1 - O Clássico Brasa & Sabor')
+  })
+
+  it('envia produtos ativos com IDs arbitrários e preserva o limite de quatro', async () => {
+    const eq = vi.fn().mockResolvedValue({ data: Array.from({ length: 5 }, (_, i) => ({ id: `novo-${i}`, nome: `Doce ${i}`, descricao: 'Artesanal', preco_centavos: 1000, url_imagem: 'https://example.test/doce.jpg' })), error: null })
+    const result = await processarAcaoInterativaWhatsApp({ clienteId: 'cli-1', telefone: '123', interactiveId: 'catalog:view', supabaseClient: { from: () => ({ select: () => ({ eq }) }) } })
+    expect(eq).toHaveBeenCalledWith('ativo', true)
+    expect(result.error).toBeUndefined()
+    expect(enviarCatalogoCombosWhatsApp).toHaveBeenCalledWith('123', expect.arrayContaining([expect.objectContaining({ id: 'novo-0', nome: 'Doce 0' })]))
+    expect(vi.mocked(enviarCatalogoCombosWhatsApp).mock.calls[0][1]).toHaveLength(4)
+  })
+
+  it('retorna erro sem enviar quando a consulta falha', async () => {
+    const result = await processarAcaoInterativaWhatsApp({ clienteId: 'cli-1', telefone: '123', interactiveId: 'catalog:view', supabaseClient: { from: () => ({ select: () => ({ eq: async () => ({ data: null, error: { message: 'falha' } }) }) }) } })
+    expect(result.error).toBe('query_unavailable')
+    expect(enviarCatalogoCombosWhatsApp).not.toHaveBeenCalled()
+  })
+
+  it('retorna vazio sem enviar quando não há produtos', async () => {
+    const result = await processarAcaoInterativaWhatsApp({ clienteId: 'cli-1', telefone: '123', interactiveId: 'catalog:view', supabaseClient: { from: () => ({ select: () => ({ eq: async () => ({ data: [], error: null }) }) }) } })
+    expect(result.error).toBe('empty')
+    expect(enviarCatalogoCombosWhatsApp).not.toHaveBeenCalled()
   })
 
   it('routes catalog:view through the catalog gateway', async () => {

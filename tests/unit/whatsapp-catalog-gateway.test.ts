@@ -56,7 +56,10 @@ describe('WhatsApp Catalog Gateway & Multi-Level Fallback (TDD)', () => {
     expect(payload.number).toBe('5541999998888')
     expect(payload.body).toContain('O que você deseja hoje')
     expect(payload.cards).toHaveLength(2)
-    expect(payload.cards[0].title).toBe('🍗 Combo 1 - O Clássico Brasa & Sabor')
+    expect(payload.cards[0].title).toBe('📦 Combo 1 - O Clássico Brasa & Sabor')
+    expect(payload.cards[1].title).toBe('📦 Combo 2 - Costela Suprema')
+    expect(payload.cards[1].buttons[0].id).toBe('cart:add:prod-2')
+    expect(payload.cards[1].body).toContain('119,90')
     expect(payload.cards[0].imageUrl).toBe('https://crmsofiamanager.duckdns.org/combo1.jpg')
     expect(payload.cards[0].buttons[0].id).toBe('cart:add:prod-1')
     expect(payload.cards[0].buttons[0].displayText).toContain('Adicionar')
@@ -70,7 +73,10 @@ describe('WhatsApp Catalog Gateway & Multi-Level Fallback (TDD)', () => {
 
     expect(cards).toHaveLength(2)
     expect(cards[0].imageUrl).toBe('https://crmsofiamanager.duckdns.org/combo1.jpg')
-    expect(cards[0].caption).toContain('COMBO 1 - O CLÁSSICO BRASA & SABOR')
+    expect(cards[0].caption).toContain('📦 *COMBO 1 - O CLÁSSICO BRASA & SABOR*')
+    expect(cards[1].caption).toContain('📦 *COMBO 2 - COSTELA SUPREMA*')
+    expect(cards[1].produtoId).toBe('prod-2')
+    expect(cards[1].caption).toContain('Quero o item 2')
     expect(cards[0].caption).toContain('69,90')
     expect(cards[0].caption).toContain('1️⃣ Adicionar ao pedido')
   })
@@ -79,6 +85,8 @@ describe('WhatsApp Catalog Gateway & Multi-Level Fallback (TDD)', () => {
     mockFetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ key: { id: 'ack-1' } }) })
     const resultado = await enviarPromptCatalogoWhatsApp('5541999998888')
     expect(resultado).toEqual({ success: true, messageId: 'ack-1' })
+    const prompt = JSON.parse(mockFetch.mock.calls[0][1].body).text
+    expect(prompt).not.toMatch(/fotos|combos oficiais/i)
     expect(mockFetch).toHaveBeenCalledWith(
       'http://127.0.0.1:8086/message/sendText/asados-bot',
       expect.objectContaining({
@@ -106,11 +114,39 @@ describe('WhatsApp Catalog Gateway & Multi-Level Fallback (TDD)', () => {
       }
     })
 
-    it('skips invalid image cards and reports no viable products honestly', async () => {
-          const resultado = await enviarCatalogoCombosWhatsApp('5541999998888', [{ ...mockProdutos[0], urlImagem: null }])
-          expect(resultado).toEqual({ success: false, sent: 0, error: 'no_viable_products' })
-          expect(mockFetch).not.toHaveBeenCalled()
-        })
+    it('envia texto com nome e preço reais sem imagem ou descrição', async () => {
+      mockFetch.mockResolvedValue({ status: 200, json: async () => ({ key: { id: 'ack' } }) })
+      const resultado = await enviarCatalogoCombosWhatsApp('5541999998888', [{ id: 'doce-1', nome: 'Doce', precoCentavos: 550, urlImagem: null, descricao: null }])
+      expect(resultado).toEqual({ success: true, sent: 1 })
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+      const [url, init] = mockFetch.mock.calls[0]
+      expect(url).toBe('http://127.0.0.1:8086/message/sendText/asados-bot')
+      const body = JSON.parse(init.body)
+      expect(body.number).toBe('5541999998888')
+      expect(body.text).toContain('Doce')
+      expect(body.text).toContain('5,50')
+      expect(body.text).not.toContain('undefined')
+      expect(body.text).not.toContain('null')
+    })
+
+    it('envia imagem sem inventar descrição quando ela não está cadastrada', async () => {
+      mockFetch.mockResolvedValue({ status: 200, json: async () => ({ key: { id: 'ack' } }) })
+      expect(await enviarCatalogoCombosWhatsApp('123', [{ ...mockProdutos[0], descricao: null }])).toEqual({ success: true, sent: 1 })
+      expect(mockFetch.mock.calls[0][0]).toContain('/message/sendMedia/')
+      expect(JSON.parse(mockFetch.mock.calls[0][1].body).caption).not.toContain('null')
+    })
+
+    it('rejeita produtos sem nome ou preço válido sem enviar', async () => {
+      const resultado = await enviarCatalogoCombosWhatsApp('123', [{ ...mockProdutos[0], nome: '' }, { ...mockProdutos[0], precoCentavos: NaN }])
+      expect(resultado).toEqual({ success: false, sent: 0, error: 'no_viable_products' })
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('não afirma entrega de texto quando o provedor falha', async () => {
+      mockFetch.mockResolvedValue({ status: 503 })
+      const resultado = await enviarCatalogoCombosWhatsApp('123', [{ ...mockProdutos[0], urlImagem: null }])
+      expect(resultado).toEqual({ success: false, sent: 0, error: 'provider_unavailable' })
+    })
 
         it('stops after the first sequential acknowledgement failure', async () => {
           mockFetch.mockResolvedValueOnce({ status: 201, json: async () => ({ key: { id: 'ack-1' } }) }).mockResolvedValueOnce({ status: 503, json: async () => ({}) }).mockResolvedValueOnce({ status: 201, json: async () => ({ key: { id: 'ack-3' } }) })

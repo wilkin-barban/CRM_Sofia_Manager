@@ -63,8 +63,8 @@ export function formatarPromptCatalogoTexto(profile = resolveBusinessProfileSync
   return [
     '🔥 *Catálogo de Produtos*',
     '',
-    'Gostaria de ver os nossos combos oficiais com fotos e valores?',
-    'Responda *1* para eu te enviar as fotos! 📸',
+    'Gostaria de ver os produtos disponíveis e seus valores?',
+    'Responda *1* para eu te enviar o catálogo! 📦',
     '',
     `_${profile.pickupAddress}_`,
   ].join('\n')
@@ -90,13 +90,17 @@ export async function enviarCatalogoCombosWhatsApp(
   if (!config) return { success: false, error: 'config_unavailable' }
   let sent = 0
   for (const produto of produtos.slice(0, 4)) {
-    if (!produto.urlImagem || !produto.nome || !produto.descricao || !Number.isFinite(produto.precoCentavos)) continue
-    const result = await postCatalogMessage('/message/sendMedia', config, {
-      number: telefone,
-      mediatype: 'image',
-      media: produto.urlImagem,
-      caption: `🔥 *${produto.nome}*\n${produto.descricao}\n\n💰 *${formatarMoeda(produto.precoCentavos)}*`,
-    })
+    if (!produto.nome || !Number.isFinite(produto.precoCentavos)) continue
+    const text = [`🔥 *${produto.nome}*`, produto.descricao, '', `💰 *${formatarMoeda(produto.precoCentavos)}*`]
+      .filter((line) => line !== null && line !== undefined).join('\n')
+    const result = produto.urlImagem
+      ? await postCatalogMessage('/message/sendMedia', config, {
+          number: telefone,
+          mediatype: 'image',
+          media: produto.urlImagem,
+          caption: text,
+        })
+      : await postCatalogMessage('/message/sendText', config, { number: telefone, text })
     if (!result.ok) return { success: false, sent, error: result.error }
     sent += 1
   }
@@ -116,7 +120,7 @@ function formatarMoeda(centavos: number): string {
 export function montarPayloadCarrossel(params: EnviarCardapioInput) {
   const cards = params.produtos.map((p) => {
     const valor = formatarMoeda(p.precoCentavos)
-    const icone = p.nome.toLowerCase().includes('costela') ? '🥩' : '🍗'
+    const icone = '📦'
 
     return {
       imageUrl: p.urlImagem || 'https://crmsofiamanager.duckdns.org/icon.png',
@@ -224,7 +228,7 @@ async function postEvolution(
 export function montarPayloadCardsFallback(params: EnviarCardapioInput) {
   return params.produtos.map((p, idx) => {
     const valor = formatarMoeda(p.precoCentavos)
-    const icone = p.nome.toLowerCase().includes('costela') ? '🥩' : '🍗'
+    const icone = '📦'
 
     const caption = [
       `━━━━━━━━━━━━━━━━━━━━━━━━`,
