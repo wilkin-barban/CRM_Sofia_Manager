@@ -27,7 +27,7 @@ ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 # Disable telemetry during Next.js build
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npm run build --workspace @asados/web -- --webpack
+RUN npm run build --workspace @asados/web
 
 # Stage 3: Production image runner
 FROM node:22-alpine AS runner

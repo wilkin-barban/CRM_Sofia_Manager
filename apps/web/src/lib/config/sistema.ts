@@ -9,6 +9,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
  */
 export async function obterConfiguracaoSistema(chave: string): Promise<string | null> {
   try {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return process.env[chave] || null
+    }
+
     const supabase = createAdminClient()
     
     // Consulta direta à tabela configuracoes_sistema ignorando RLS via service_role
@@ -26,7 +30,7 @@ export async function obterConfiguracaoSistema(chave: string): Promise<string | 
       return data.valor
     }
   } catch (err) {
-    console.error(`[Config Fallback] Falha técnica ao consultar chave ${chave}:`, err)
+    console.warn(`[Config Fallback] Falha técnica ao consultar chave ${chave}:`, err instanceof Error ? err.message : String(err))
   }
 
   // Fallback para variáveis de ambiente locais do servidor
